@@ -27,8 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 
 @Composable
@@ -43,21 +43,21 @@ fun MiniPlayer(
     onNext: () -> Unit = {}
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
-        shape = RoundedCornerShape(18.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        tonalElevation = 3.dp
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 3.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 2.dp
     ) {
         Column {
             Row(
                 modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
-                    .padding(start = 12.dp, end = 6.dp, top = 9.dp, bottom = 8.dp),
+                    .padding(start = 10.dp, end = 4.dp, top = 7.dp, bottom = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(11.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Box(
-                    modifier = Modifier.size(46.dp).clip(RoundedCornerShape(9.dp))
-                        .background(MaterialTheme.colorScheme.surface),
+                    modifier = Modifier.size(44.dp).clip(RoundedCornerShape(7.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
                     if (artworkUri != null) {
@@ -65,12 +65,13 @@ fun MiniPlayer(
                             model = artworkUri,
                             contentDescription = "Album artwork",
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier.size(46.dp)
+                            modifier = Modifier.size(44.dp)
                         )
                     } else {
                         Box(
-                            modifier = Modifier.size(36.dp).background(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.22f), CircleShape
+                            modifier = Modifier.size(34.dp).background(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
+                                CircleShape
                             ),
                             contentAlignment = Alignment.Center
                         ) {
@@ -79,7 +80,11 @@ fun MiniPlayer(
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(title.ifBlank { "Nothing playing" }, style = MaterialTheme.typography.titleSmall, maxLines = 1)
+                    Text(
+                        title.ifBlank { "Nothing playing" },
+                        style = MaterialTheme.typography.titleSmall,
+                        maxLines = 1
+                    )
                     Text(
                         artist.ifBlank { "Choose a track" },
                         style = MaterialTheme.typography.bodySmall,
@@ -88,7 +93,10 @@ fun MiniPlayer(
                     )
                 }
                 IconButton(onClick = onPlayPause) {
-                    Icon(if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, contentDescription = if (isPlaying) "Pause" else "Play")
+                    Icon(
+                        if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                        contentDescription = if (isPlaying) "Pause" else "Play"
+                    )
                 }
                 IconButton(onClick = onNext) {
                     Icon(Icons.Rounded.SkipNext, contentDescription = "Next")
@@ -96,9 +104,9 @@ fun MiniPlayer(
             }
             LinearProgressIndicator(
                 progress = { progress.coerceIn(0f, 1f) },
-                modifier = Modifier.fillMaxWidth().height(3.dp),
+                modifier = Modifier.fillMaxWidth().height(2.dp),
                 color = MaterialTheme.colorScheme.primary,
-                trackColor = MaterialTheme.colorScheme.surface
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
         }
     }
