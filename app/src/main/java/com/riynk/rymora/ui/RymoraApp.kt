@@ -10,6 +10,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -103,6 +105,7 @@ fun RymoraApp(playbackViewModel: PlaybackViewModel = viewModel()) {
                                 playback.positionMs.toFloat() / playback.durationMs.toFloat()
                             } else 0f,
                             onClick = { navController.navigate(Routes.NOW_PLAYING) },
+                            onSwipeUp = { navController.navigate(Routes.NOW_PLAYING) },
                             onPlayPause = playbackViewModel::togglePlayPause,
                             onNext = playbackViewModel::skipNext
                         )
