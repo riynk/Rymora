@@ -127,6 +127,22 @@ class PlaybackViewModel(application: Application) : AndroidViewModel(application
     fun skipNext() { controller?.seekToNextMediaItem(); publishState() }
     fun skipPrevious() { controller?.seekToPreviousMediaItem(); publishState() }
 
+    fun toggleShuffle() {
+        controller?.let { it.shuffleModeEnabled = !it.shuffleModeEnabled }
+        publishState()
+    }
+
+    fun cycleRepeatMode() {
+        controller?.let {
+            it.repeatMode = when (it.repeatMode) {
+                Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
+                Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
+                else -> Player.REPEAT_MODE_OFF
+            }
+        }
+        publishState()
+    }
+
     fun seekTo(positionMs: Long) {
         controller?.seekTo(positionMs)
         publishState()
@@ -145,7 +161,9 @@ class PlaybackViewModel(application: Application) : AndroidViewModel(application
             positionMs = player.currentPosition.coerceAtLeast(0L),
             isPlaying = player.isPlaying,
             hasNext = player.hasNextMediaItem(),
-            hasPrevious = player.hasPreviousMediaItem()
+            hasPrevious = player.hasPreviousMediaItem(),
+            shuffleEnabled = player.shuffleModeEnabled,
+            repeatMode = player.repeatMode
         )
     }
 
