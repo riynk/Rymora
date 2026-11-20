@@ -25,7 +25,8 @@ data class LocalTrack(
     val title: String,
     val artist: String,
     val durationMs: Long,
-    val artworkUri: Uri? = null
+    val artworkUri: Uri? = null,
+    val album: String = ""
 )
 
 class PlaybackViewModel(application: Application) : AndroidViewModel(application) {
@@ -73,7 +74,8 @@ class PlaybackViewModel(application: Application) : AndroidViewModel(application
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
             MediaStore.Audio.Media.DURATION,
-            MediaStore.Audio.Media.ALBUM_ID
+            MediaStore.Audio.Media.ALBUM_ID,
+            MediaStore.Audio.Media.ALBUM
         )
         val found = mutableListOf<LocalTrack>()
         resolver.query(
@@ -88,17 +90,19 @@ class PlaybackViewModel(application: Application) : AndroidViewModel(application
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
             val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
             val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
+            val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
                 val title = cursor.getString(titleColumn) ?: "Unknown title"
                 val artist = cursor.getString(artistColumn)?.takeUnless { it == "<unknown>" } ?: "Unknown artist"
                 val duration = cursor.getLong(durationColumn)
                 val albumId = cursor.getLong(albumIdColumn)
+                val album = cursor.getString(albumColumn)?.takeUnless { it == "<unknown>" } ?: "Unknown album"
                 val uri = Uri.withAppendedPath(collection, id.toString())
                 val artworkUri = if (albumId > 0L) {
                     Uri.parse("content://media/external/audio/albumart/$albumId")
                 } else null
-                found += LocalTrack(id, uri, title, artist, duration, artworkUri)
+                found += LocalTrack(id, uri, title, artist, duration, artworkUri, album)
             }
         }
         _tracks.value = found
