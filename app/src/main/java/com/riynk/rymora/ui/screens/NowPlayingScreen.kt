@@ -4,7 +4,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,7 +30,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.riynk.rymora.playback.PlaybackUiState
@@ -43,7 +41,8 @@ fun NowPlayingScreen(
     onPlayPause: () -> Unit,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
-    onSeek: (Long) -> Unit
+    onSeek: (Long) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val rotation = remember { Animatable(0f) }
     LaunchedEffect(state.isPlaying) {
@@ -61,22 +60,7 @@ fun NowPlayingScreen(
     val position = state.positionMs.coerceIn(0L, duration)
 
     Column(
-        modifier = Modifier.fillMaxSize()
-            .pointerInput(onBack) {
-                var dragDistance = 0f
-                detectVerticalDragGestures(
-                    onVerticalDrag = { change, dragAmount ->
-                        change.consume()
-                        dragDistance += dragAmount
-                    },
-                    onDragEnd = {
-                        if (dragDistance > 72.dp.toPx()) onBack()
-                        dragDistance = 0f
-                    },
-                    onDragCancel = { dragDistance = 0f }
-                )
-            }
-            .padding(horizontal = 24.dp, vertical = 12.dp),
+        modifier = modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
@@ -99,11 +83,13 @@ fun NowPlayingScreen(
             contentAlignment = Alignment.Center
         ) {
             Box(
-                modifier = Modifier.size(250.dp).border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), CircleShape),
+                modifier = Modifier.size(250.dp)
+                    .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
-                    modifier = Modifier.size(205.dp).border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), CircleShape),
+                    modifier = Modifier.size(205.dp)
+                        .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
@@ -112,12 +98,17 @@ fun NowPlayingScreen(
                             .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("R", style = MaterialTheme.typography.displayLarge, color = MaterialTheme.colorScheme.primary)
+                        Text(
+                            "R",
+                            style = MaterialTheme.typography.displayLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             }
             Box(
-                modifier = Modifier.size(18.dp).background(MaterialTheme.colorScheme.background, CircleShape)
+                modifier = Modifier.size(18.dp)
+                    .background(MaterialTheme.colorScheme.background, CircleShape)
                     .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
             )
         }
