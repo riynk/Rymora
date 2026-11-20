@@ -1,5 +1,6 @@
 package com.riynk.rymora.ui.components
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,12 +26,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 
 @Composable
 fun MiniPlayer(
     title: String,
     artist: String,
+    artworkUri: Uri? = null,
     isPlaying: Boolean = false,
     progress: Float = 0f,
     onClick: () -> Unit,
@@ -51,29 +56,30 @@ fun MiniPlayer(
                 horizontalArrangement = Arrangement.spacedBy(11.dp)
             ) {
                 Box(
-                    modifier = Modifier.size(46.dp)
-                        .background(MaterialTheme.colorScheme.surface, CircleShape),
+                    modifier = Modifier.size(46.dp).clip(RoundedCornerShape(9.dp))
+                        .background(MaterialTheme.colorScheme.surface),
                     contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier.size(36.dp).background(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.22f), CircleShape
-                        ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            "R",
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.titleLarge
+                    if (artworkUri != null) {
+                        AsyncImage(
+                            model = artworkUri,
+                            contentDescription = "Album artwork",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.size(46.dp)
                         )
+                    } else {
+                        Box(
+                            modifier = Modifier.size(36.dp).background(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.22f), CircleShape
+                            ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("R", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleLarge)
+                        }
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        title.ifBlank { "Nothing playing" },
-                        style = MaterialTheme.typography.titleSmall,
-                        maxLines = 1
-                    )
+                    Text(title.ifBlank { "Nothing playing" }, style = MaterialTheme.typography.titleSmall, maxLines = 1)
                     Text(
                         artist.ifBlank { "Choose a track" },
                         style = MaterialTheme.typography.bodySmall,
@@ -82,10 +88,7 @@ fun MiniPlayer(
                     )
                 }
                 IconButton(onClick = onPlayPause) {
-                    Icon(
-                        if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                        contentDescription = if (isPlaying) "Pause" else "Play"
-                    )
+                    Icon(if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, contentDescription = if (isPlaying) "Pause" else "Play")
                 }
                 IconButton(onClick = onNext) {
                     Icon(Icons.Rounded.SkipNext, contentDescription = "Next")
