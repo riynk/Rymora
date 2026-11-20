@@ -1,8 +1,10 @@
 package com.riynk.rymora.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -122,7 +124,7 @@ fun NowPlayingScreen(
 
             Surface(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
-                    .aspectRatioCompat(),
+                    .aspectRatio(1f),
                 shape = RoundedCornerShape(24.dp),
                 color = Color.White.copy(alpha = 0.07f),
                 shadowElevation = 18.dp
@@ -269,7 +271,7 @@ fun NowPlayingScreen(
                         Row(
                             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
                                 .background(if (selected) Color.White.copy(alpha = 0.10f) else Color.Transparent)
-                                .clickableCompat { onSelectTrack(track); showQueue = false }
+                                .clickable { onSelectTrack(track); showQueue = false }
                                 .padding(horizontal = 10.dp, vertical = 13.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -293,13 +295,6 @@ fun NowPlayingScreen(
         }
     }
 }
-
-private fun Modifier.aspectRatioCompat(): Modifier = this.then(
-    Modifier.fillMaxWidth().height(0.dp)
-).then(Modifier)
-
-private fun Modifier.clickableCompat(onClick: () -> Unit): Modifier =
-    this.then(androidx.compose.foundation.clickable(onClick = onClick))
 
 private fun formatTime(milliseconds: Long): String {
     val totalSeconds = (milliseconds / 1000L).coerceAtLeast(0L)
