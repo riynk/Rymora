@@ -15,7 +15,9 @@ data class PlaybackUiState(
     val positionMs: Long = 0L,
     val isPlaying: Boolean = false,
     val hasNext: Boolean = false,
-    val hasPrevious: Boolean = false
+    val hasPrevious: Boolean = false,
+    val shuffleEnabled: Boolean = false,
+    val repeatMode: Int = 0
 ) {
     val hasTrack: Boolean get() = mediaId != null
 }
