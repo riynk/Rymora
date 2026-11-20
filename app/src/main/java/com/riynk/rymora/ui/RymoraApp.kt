@@ -32,6 +32,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.ArrowBack
@@ -60,6 +65,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,6 +77,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -167,12 +174,49 @@ fun RymoraApp(playbackViewModel: PlaybackViewModel = viewModel()) {
         } else {
             with(density) { 80.dp.toPx() }
         }
+        val latestProgress = rememberUpdatedState(playerProgress)
+        val latestSettle = rememberUpdatedState<(Float) -> Unit>(
+            newValue = { target -> settlePlayer(target) }
+        )
+        val panelNestedScroll = remember(rootHeightPx) {
+            object : NestedScrollConnection {
+                override fun onPostScroll(
+                    consumed: Offset,
+                    available: Offset,
+                    source: NestedScrollSource
+                ): Offset {
+                    val progress = latestProgress.value
+                    if (available.y <= 0f || progress <= 0f) return Offset.Zero
+
+                    val consumedY = minOf(available.y, progress * rootHeightPx)
+                    playerProgress = (progress - consumedY / rootHeightPx.coerceAtLeast(1f))
+                        .coerceIn(0f, 1f)
+                    return Offset(0f, consumedY)
+                }
+
+                override suspend fun onPostFling(
+                    consumed: Velocity,
+                    available: Velocity
+                ): Velocity {
+                    val progress = latestProgress.value
+                    if (progress > 0f && progress < 1f) {
+                        val collapse = available.y > 650f || progress < 0.42f
+                        latestSettle.value(if (collapse) 0f else 1f)
+                    }
+                    return Velocity.Zero
+                }
+            }
+        }
+        val miniPlayerDragState = rememberDraggableState { delta ->
+            playerProgress = (playerProgress - delta / rootHeightPx.coerceAtLeast(1f))
+                .coerceIn(0f, 1f)
+        }
 
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             bottomBar = {
                 NavigationBar(
-                    modifier = Modifier,
+                    modifier = Modifier.onSizeChanged { navigationBarHeightPx = it.height },
                     containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 0.dp
                 ) {
@@ -255,30 +299,13 @@ fun RymoraApp(playbackViewModel: PlaybackViewModel = viewModel()) {
                 MaterialTheme.colorScheme.background,
                 playerProgress
             )
-            val dragState = rememberDraggableState { delta ->
-                playerProgress = (playerProgress - delta / rootHeightPx.coerceAtLeast(1f))
-                    .coerceIn(0f, 1f)
-            }
-
             Box(Modifier.fillMaxSize().clipToBounds()) {
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(with(density) { sheetHeightPx.toDp() })
                         .offset { IntOffset(0, sheetTopPx.roundToInt()) }
-                        .draggable(
-                            state = dragState,
-                            orientation = Orientation.Vertical,
-                            onDragStarted = { settleJob?.cancel() },
-                            onDragStopped = { velocity ->
-                                val expand = when {
-                                    velocity < -1000f -> true
-                                    velocity > 1000f -> false
-                                    else -> playerProgress >= 0.42f
-                                }
-                                settlePlayer(if (expand) 1f else 0f)
-                            }
-                        ),
+                        .nestedScroll(panelNestedScroll),
                     shape = RoundedCornerShape(
                         topStart = 18.dp * (1f - playerProgress),
                         topEnd = 18.dp * (1f - playerProgress)
@@ -310,6 +337,19 @@ fun RymoraApp(playbackViewModel: PlaybackViewModel = viewModel()) {
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)
                                     .fillMaxWidth()
+                                    .draggable(
+                                        state = miniPlayerDragState,
+                                        orientation = Orientation.Vertical,
+                                        onDragStarted = { settleJob?.cancel() },
+                                        onDragStopped = { velocity ->
+                                            val expand = when {
+                                                velocity < -1000f -> true
+                                                velocity > 1000f -> false
+                                                else -> playerProgress >= 0.42f
+                                            }
+                                            settlePlayer(if (expand) 1f else 0f)
+                                        }
+                                    )
                                     .graphicsLayer {
                                         alpha = 1f - playerProgress
                                         scaleX = 1f - (0.025f * playerProgress)
