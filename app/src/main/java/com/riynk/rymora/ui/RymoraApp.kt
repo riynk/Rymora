@@ -99,6 +99,9 @@ fun RymoraApp(playbackViewModel: PlaybackViewModel = viewModel()) {
                             title = playback.title,
                             artist = playback.artist,
                             isPlaying = playback.isPlaying,
+                            progress = if (playback.durationMs > 0L) {
+                                playback.positionMs.toFloat() / playback.durationMs.toFloat()
+                            } else 0f,
                             onClick = { navController.navigate(Routes.NOW_PLAYING) },
                             onPlayPause = playbackViewModel::togglePlayPause,
                             onNext = playbackViewModel::skipNext
