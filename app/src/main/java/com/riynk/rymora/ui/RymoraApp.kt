@@ -44,7 +44,6 @@ import androidx.navigation.compose.rememberNavController
 import com.riynk.rymora.ui.components.MiniPlayer
 import com.riynk.rymora.ui.navigation.Routes
 import com.riynk.rymora.ui.screens.NowPlayingScreen
-import com.riynk.rymora.ui.screens.PlaceholderScreen
 
 private data class TabItem(val route: String, val label: String, val icon: ImageVector)
 
