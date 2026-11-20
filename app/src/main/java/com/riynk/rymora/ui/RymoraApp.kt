@@ -290,11 +290,15 @@ fun RymoraApp(playbackViewModel: PlaybackViewModel = viewModel()) {
                         if (playerProgress > 0.005f) {
                             NowPlayingScreen(
                                 state = playback,
+                                tracks = tracks,
                                 onBack = { settlePlayer(0f) },
                                 onPlayPause = playbackViewModel::togglePlayPause,
                                 onNext = playbackViewModel::skipNext,
                                 onPrevious = playbackViewModel::skipPrevious,
                                 onSeek = playbackViewModel::seekTo,
+                                onToggleShuffle = playbackViewModel::toggleShuffle,
+                                onCycleRepeat = playbackViewModel::cycleRepeatMode,
+                                onSelectTrack = playbackViewModel::playTrack,
                                 modifier = Modifier.fillMaxSize().graphicsLayer {
                                     alpha = playerProgress
                                 }
@@ -315,6 +319,7 @@ fun RymoraApp(playbackViewModel: PlaybackViewModel = viewModel()) {
                                 MiniPlayer(
                                     title = playback.title,
                                     artist = playback.artist,
+                                    artworkUri = playback.artworkUri,
                                     isPlaying = playback.isPlaying,
                                     progress = if (playback.durationMs > 0L) {
                                         playback.positionMs.toFloat() / playback.durationMs.toFloat()
