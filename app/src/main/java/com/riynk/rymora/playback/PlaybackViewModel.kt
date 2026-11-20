@@ -24,7 +24,8 @@ data class LocalTrack(
     val uri: Uri,
     val title: String,
     val artist: String,
-    val durationMs: Long
+    val durationMs: Long,
+    val artworkUri: Uri? = null
 )
 
 class PlaybackViewModel(application: Application) : AndroidViewModel(application) {
@@ -71,7 +72,8 @@ class PlaybackViewModel(application: Application) : AndroidViewModel(application
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.DURATION
+            MediaStore.Audio.Media.DURATION,
+            MediaStore.Audio.Media.ALBUM_ID
         )
         val found = mutableListOf<LocalTrack>()
         resolver.query(
@@ -85,13 +87,18 @@ class PlaybackViewModel(application: Application) : AndroidViewModel(application
             val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
             val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
+            val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
                 val title = cursor.getString(titleColumn) ?: "Unknown title"
                 val artist = cursor.getString(artistColumn)?.takeUnless { it == "<unknown>" } ?: "Unknown artist"
                 val duration = cursor.getLong(durationColumn)
+                val albumId = cursor.getLong(albumIdColumn)
                 val uri = Uri.withAppendedPath(collection, id.toString())
-                found += LocalTrack(id, uri, title, artist, duration)
+                val artworkUri = if (albumId > 0L) {
+                    Uri.parse("content://media/external/audio/albumart/$albumId")
+                } else null
+                found += LocalTrack(id, uri, title, artist, duration, artworkUri)
             }
         }
         _tracks.value = found
@@ -108,6 +115,7 @@ class PlaybackViewModel(application: Application) : AndroidViewModel(application
                     MediaMetadata.Builder()
                         .setTitle(item.title)
                         .setArtist(item.artist)
+                        .setArtworkUri(item.artworkUri)
                         .build()
                 )
                 .build()
