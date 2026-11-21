@@ -1,6 +1,7 @@
 package com.riynk.rymora.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -64,6 +66,7 @@ import coil.compose.AsyncImage
 import com.riynk.rymora.playback.LocalTrack
 import com.riynk.rymora.playback.PlaybackUiState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NowPlayingScreen(
     state: PlaybackUiState,
@@ -303,6 +306,7 @@ fun NowPlayingScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(13.dp))
+                                .clickable { onSelectTrack(track); showQueue = false }
                                 .background(if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f) else Color.Transparent)
                                 .padding(horizontal = 9.dp, vertical = 11.dp),
                             verticalAlignment = Alignment.CenterVertically
