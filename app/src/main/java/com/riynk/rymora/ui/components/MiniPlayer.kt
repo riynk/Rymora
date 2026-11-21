@@ -29,6 +29,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 
@@ -46,37 +48,37 @@ fun MiniPlayer(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 5.dp)
+            .padding(horizontal = 10.dp, vertical = 4.dp)
             .pointerInput(onClick) {
-                var upwardDrag = 0f
+                var dragDistance = 0f
                 detectVerticalDragGestures(
-                    onDragStart = { upwardDrag = 0f },
-                    onVerticalDrag = { change, amount ->
-                        if (amount < 0f) {
-                            upwardDrag += -amount
+                    onDragStart = { dragDistance = 0f },
+                    onVerticalDrag = { change, delta ->
+                        if (delta < 0f) {
+                            dragDistance += -delta
                             change.consume()
                         }
                     },
-                    onDragEnd = { if (upwardDrag > 30f) onClick() }
+                    onDragEnd = { if (dragDistance > 48.dp.toPx()) onClick() }
                 )
             },
-        shape = RoundedCornerShape(19.dp),
+        shape = RoundedCornerShape(18.dp),
         color = MaterialTheme.colorScheme.surfaceContainer,
-        tonalElevation = 0.dp
+        tonalElevation = 1.dp
     ) {
         Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onClick)
-                    .padding(start = 9.dp, end = 5.dp, top = 8.dp, bottom = 7.dp),
+                    .padding(start = 9.dp, end = 6.dp, top = 7.dp, bottom = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(11.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Box(
                     modifier = Modifier
                         .size(48.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(11.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
@@ -95,27 +97,16 @@ fun MiniPlayer(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    Text(
-                        title.ifBlank { "Nothing playing" },
-                        style = MaterialTheme.typography.titleSmall,
-                        maxLines = 1
-                    )
-                    Text(
-                        artist.ifBlank { "Choose a track" },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
-                    )
+                    Text(title.ifBlank { "Nothing playing" }, style = MaterialTheme.typography.titleSmall, maxLines = 1)
+                    Text(artist.ifBlank { "Choose a track" }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
                 }
-                IconButton(onClick = onPlayPause) {
-                    Icon(
-                        if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                        contentDescription = if (isPlaying) "Pause" else "Play",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
+                IconButton(onClick = onPlayPause, modifier = Modifier.size(44.dp).semantics {
+                    contentDescription = if (isPlaying) "Pause playback" else "Resume playback"
+                }) {
+                    Icon(if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(27.dp))
                 }
-                IconButton(onClick = onNext) {
-                    Icon(Icons.Rounded.SkipNext, contentDescription = "Next", tint = MaterialTheme.colorScheme.onSurface)
+                IconButton(onClick = onNext, modifier = Modifier.size(42.dp)) {
+                    Icon(Icons.Rounded.SkipNext, contentDescription = "Next track", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(27.dp))
                 }
             }
             LinearProgressIndicator(
