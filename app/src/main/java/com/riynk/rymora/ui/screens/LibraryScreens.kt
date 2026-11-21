@@ -121,7 +121,7 @@ fun HomeScreen(
         } else {
             item {
                 SectionHeading(
-                    title = "Recently added",
+                    title = "Your tracks",
                     action = "See all",
                     onAction = onOpenLibrary
                 )
