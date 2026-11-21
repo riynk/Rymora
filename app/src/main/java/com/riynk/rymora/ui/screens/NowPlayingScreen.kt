@@ -135,7 +135,8 @@ fun NowPlayingScreen(
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()
         ) {
-            val compact = maxHeight < 690.dp\n            val artworkSize = minOf(maxWidth - 48.dp, maxHeight * if (compact) 0.34f else 0.43f).coerceAtLeast(160.dp)
+            val compact = maxHeight < 690.dp
+            val artworkSize = minOf(maxWidth - 48.dp, maxHeight * if (compact) 0.34f else 0.43f).coerceAtLeast(160.dp)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
