@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.contentDescription
@@ -43,23 +44,32 @@ fun MiniPlayer(
     progress: Float = 0f,
     onClick: () -> Unit,
     onPlayPause: () -> Unit = {},
-    onNext: () -> Unit = {}
+    onNext: () -> Unit = {},
+    expansionProgress: Float = 0f,
+    onDragProgress: (Float) -> Unit = {},
+    onDragEnd: () -> Unit = {}
 ) {
+    val dragProgress = expansionProgress.coerceIn(0f, 1f)
     Surface(
         modifier = Modifier
             .fillMaxWidth()
+            .graphicsLayer {
+                scaleX = 1f + dragProgress * 0.035f
+                scaleY = 1f + dragProgress * 0.075f
+                alpha = 1f - dragProgress * 0.92f
+            }
             .padding(horizontal = 10.dp, vertical = 4.dp)
-            .pointerInput(onClick) {
-                var dragDistance = 0f
+            .pointerInput(onDragProgress, onDragEnd) {
+                var distance = 0f
                 detectVerticalDragGestures(
-                    onDragStart = { dragDistance = 0f },
+                    onDragStart = { distance = 0f },
                     onVerticalDrag = { change, delta ->
-                        if (delta < 0f) {
-                            dragDistance += -delta
-                            change.consume()
-                        }
+                        distance = (distance - delta).coerceAtLeast(0f)
+                        onDragProgress((distance / (size.height * 3.2f)).coerceIn(0f, 1f))
+                        if (delta < 0f) change.consume()
                     },
-                    onDragEnd = { if (dragDistance > 48.dp.toPx()) onClick() }
+                    onDragEnd = onDragEnd,
+                    onDragCancel = onDragEnd
                 )
             },
         shape = RoundedCornerShape(18.dp),
