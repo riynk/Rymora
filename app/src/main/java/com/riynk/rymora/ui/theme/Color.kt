@@ -18,7 +18,11 @@ val RymoraMuted = Color(0xFFB4B1BC)
 val RymoraOutline = Color(0xFF45444D)
 val RymoraError = Color(0xFFFFB4AB)
 
-// Legacy aliases retained so existing screens compile while they are replaced.
+val ColorOnAccent = Color(0xFF211533)
+val ColorOnMint = Color(0xFF07372D)
+val ColorOnRose = Color(0xFF44202D)
+
+// Legacy aliases retained during the UI migration.
 val RymoraBackgroundLegacy = Color(0xFF100E18)
 val RymoraSurfaceLegacy = Color(0xFF1B1826)
 val RymoraSurfaceVariantLegacy = Color(0xFF292437)
