@@ -69,7 +69,7 @@ fun HomeScreen(
     onScan: () -> Unit
 ) {
     val albumCount = remember(tracks) { tracks.map { it.album }.filter { it.isNotBlank() }.distinct().size }
-    val artistCount = remember(tracks) { tracks.map { it.artist }.filter(String::isNotBlank).distinct().size }
+    val artistCount = remember(tracks) { tracks.map { it.artist }.filter { it.isNotBlank() }.distinct().size }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -168,7 +168,7 @@ fun SearchScreen(
             } else null
         )
         if (query.isBlank()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Icon(Icons.Rounded.Search, contentDescription = null, modifier = Modifier.size(42.dp), tint = MaterialTheme.colorScheme.primary)
                     Text("Search your offline library", style = MaterialTheme.typography.titleMedium)
@@ -180,7 +180,7 @@ fun SearchScreen(
                 Text("No matches found", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 items(results, key = { it.id }) { track ->
                     TrackListItem(track = track, onClick = { onPlayTrack(track) })
                 }
@@ -227,14 +227,14 @@ fun LibraryScreen(
         } else {
             when (selected) {
                 "Songs" -> LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
                     contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 14.dp, bottom = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     items(tracks, key = { it.id }) { track -> TrackListItem(track, onClick = { onPlayTrack(track) }) }
                 }
                 "Albums" -> LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(7.dp)
                 ) {
