@@ -1,32 +1,32 @@
 # Rymora Design System — Obsidian Aurora
 
-This design system replaces the legacy purple UI. It is the base for the full redesign branch.
+This design system replaces the legacy Rymora interface. The UI is implemented as native Jetpack Compose screens and components, with Media3 retained as the playback foundation.
 
 ## Direction
 - Dark-first, music-focused, artwork-led.
-- Obsidian surfaces with soft Aurora lavender accent; mint and rose are supporting accents only.
-- Avoid excessive cards, outlines, gradients, and ornamental effects.
-- Artwork is the expressive element; controls and text remain legible.
+- Neutral obsidian surfaces with a restrained aurora-lavender accent; mint and rose are secondary accents.
+- Prefer clear hierarchy and generous artwork over stacks of decorative cards.
+- Artwork is expressive; all controls and metadata retain strong contrast.
 
 ## Color tokens
 | Token | Hex | Use |
 |---|---|---|
-| Background | #0B0B0E | Main app background |
-| Surface | #18181D | Sheets, panels, mini player |
-| Surface Variant | #25252D | Elevated interactive areas |
-| Surface Container | #202027 | Grouped settings and secondary panels |
-| Primary / Aurora | #D0BCFF | Primary action, active state, seek progress |
-| Primary Container | #382A52 | Subtle accent backgrounds |
-| Secondary / Mint | #80D8C2 | Secondary status / optional accents |
-| Secondary Container | #153B34 | Mint accent backgrounds |
-| Tertiary / Rose | #F0B6C7 | Rare accent |
-| Tertiary Container | #4A2937 | Rose accent backgrounds |
-| Text | #F2F0F5 | Primary text |
-| Muted | #B4B1BC | Metadata and supporting text |
-| Outline | #45444D | Subtle dividers and borders |
+| Background | #09090C | Main app background |
+| Surface | #141419 | Sheets, panels and navigation |
+| Surface Container | #1D1D24 | Mini player and grouped panels |
+| Surface Variant | #292932 | Elevated interactive areas |
+| Primary / Aurora | #C9B5FF | Primary action, active state and seek progress |
+| Primary Container | #34264F | Subtle accent backgrounds |
+| Secondary / Mint | #8BD9C7 | Secondary status and optional accents |
+| Secondary Container | #153A33 | Mint accent backgrounds |
+| Tertiary / Rose | #FFB8CC | Rare accent |
+| Tertiary Container | #492638 | Rose accent backgrounds |
+| Text | #F4F1F7 | Primary text |
+| Muted | #AAA7B2 | Metadata and supporting text |
+| Outline | #45434D | Subtle dividers and borders |
 | Error | #FFB4AB | Errors |
 
-Do not use accent colors as large page backgrounds. Artwork-derived colors may tint a player backdrop, but must not replace text/control contrast.
+Do not use accent colors as large page backgrounds. Artwork may tint the player backdrop, but must not reduce text or control contrast.
 
 ## Typography
 - Display: 40sp / 32sp, bold, tight tracking.
@@ -34,43 +34,37 @@ Do not use accent colors as large page backgrounds. Artwork-derived colors may t
 - Title: 18sp / 16sp / 14sp, semibold or medium.
 - Body: 16sp / 14sp / 12sp.
 - Label: 14sp / 12sp / 11sp, medium.
-- Track titles use title/headline styles; artist and metadata use bodySmall/bodyMedium with muted color.
-- Use system font initially; no bundled font dependency until visual QA proves one is needed.
+- Track titles use title/headline styles; artist and metadata use muted body styles.
+- Use the system font; no bundled font dependency.
 
 ## Shapes
-- Extra small: 6dp.
-- Small: 10dp.
-- Medium: 16dp.
+- Extra small: 7dp.
+- Small: 11dp.
+- Medium: 17dp.
 - Large: 24dp.
-- Extra large: 32dp.
-- Artwork is generally square and clipped to 16–24dp corners, depending on size.
-- Pill shapes reserved for chips and selected controls.
+- Extra large: 30dp.
+- Artwork is square and clipped to 12–22dp corners.
+- Pill shapes are reserved for chips and selected controls.
 
-## Spacing scale
+## Spacing
 Use multiples of 4dp: 4, 8, 12, 16, 20, 24, 32, 40, 48.
-- Screen edge: 20dp (compact width may use 16dp).
-- Between section title and content: 12–16dp.
-- Between major sections: 24–32dp.
-- Touch target: minimum 48dp.
-- Mini player height: target 64–72dp excluding its progress indicator.
-- Bottom navigation: account for system navigation insets.
+- Screen edge: 20dp.
+- Major sections: 18–24dp.
+- Touch targets: minimum 48dp.
+- Mini player: 64–72dp plus its progress indicator.
+- Bottom navigation accounts for system navigation insets.
 
-## Iconography
-- Use Material/Compose icons consistently; avoid mixed stroke weights.
-- Icon-only actions need semantic descriptions.
-- Standard control sizes: 24dp; prominent player controls 28–32dp.
-- Play/pause is the visual priority; secondary actions should not compete.
+## Components
+- Home: local-library summary, shuffle-all action and track list.
+- Search: searches local song, artist and album metadata.
+- Library: Songs, Albums and Artists views over the MediaStore index.
+- Mini Player: artwork, title/artist, play-pause, next, progress and swipe-up expansion.
+- Now Playing: artwork-led controls, seek/time, queue, shuffle/repeat and swipe-down collapse from the player surface.
+- Settings: grouped Appearance, Music Library, Playback and About sections.
+- Navigation: Home, Search and Library; selected state uses icon and color.
 
-## Component principles
-- Home/library rows: clear title, supporting metadata, artwork where useful, no unnecessary borders.
-- Mini player: artwork, title/artist, play-pause, next, thin progress.
-- Now Playing: artwork-led; title and artist; seek/time; primary transport; secondary shuffle/repeat/queue.
-- Settings: category rows with icon, title, short description, chevron; controls live on their own focused pages.
-- Selected navigation is indicated by color and/or filled icon, never color alone.
-- Motion should be purposeful, short, and interruptible. Avoid introducing custom motion until the player transition is implemented and tested.
-
-## Accessibility
-- Keep text contrast high against surfaces.
-- Do not encode state solely with color.
+## Motion and accessibility
+- Transitions are short, purposeful and interruptible.
+- Keep text contrast high and do not encode state solely with color.
 - Respect system font scaling and reduced-motion settings.
-- All touch actions should be at least 48dp.
+- Icon-only controls require semantic descriptions.
