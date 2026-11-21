@@ -118,7 +118,7 @@ fun NowPlayingScreen(
                     Text("RYMORA MIX", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                 }
                 IconButton(onClick = { showQueue = true }) {
-                    Icon(Icons.Rounded.QueueMusic, contentDescription = "Up next", tint = Color.White)
+                    Icon(Icons.Rounded.QueueMusic, contentDescription = "Up next", tint = MaterialTheme.colorScheme.onSurface)
                 }
             }
 
@@ -146,7 +146,7 @@ fun NowPlayingScreen(
                             ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("R", color = Color.White, style = MaterialTheme.typography.displayLarge, fontWeight = FontWeight.Black)
+                            Text("R", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.displayLarge, fontWeight = FontWeight.Black)
                         }
                     }
                 }
@@ -161,7 +161,7 @@ fun NowPlayingScreen(
                 Column(Modifier.weight(1f)) {
                     Text(
                         if (state.hasTrack) state.title else "No track selected",
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1
@@ -190,7 +190,7 @@ fun NowPlayingScreen(
             )
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(formatTime(position), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
-                Text("-${formatTime((duration - position).coerceAtLeast(0L))}", color = Color.White.copy(alpha = 0.65f), style = MaterialTheme.typography.labelSmall)
+                Text("-${formatTime((duration - position).coerceAtLeast(0L))}", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f), style = MaterialTheme.typography.labelSmall)
             }
 
             Spacer(Modifier.height(18.dp))
@@ -204,13 +204,13 @@ fun NowPlayingScreen(
                     Icon(Icons.Rounded.Shuffle, contentDescription = "Shuffle", tint = if (state.shuffleEnabled) activeTint else inactiveTint)
                 }
                 IconButton(onClick = onPrevious, enabled = state.hasPrevious) {
-                    Icon(Icons.Rounded.SkipPrevious, contentDescription = "Previous", tint = Color.White, modifier = Modifier.size(34.dp))
+                    Icon(Icons.Rounded.SkipPrevious, contentDescription = "Previous", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(34.dp))
                 }
                 Surface(
                     onClick = onPlayPause,
                     enabled = state.hasTrack,
                     shape = CircleShape,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(68.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
@@ -223,7 +223,7 @@ fun NowPlayingScreen(
                     }
                 }
                 IconButton(onClick = onNext, enabled = state.hasNext) {
-                    Icon(Icons.Rounded.SkipNext, contentDescription = "Next", tint = Color.White, modifier = Modifier.size(34.dp))
+                    Icon(Icons.Rounded.SkipNext, contentDescription = "Next", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(34.dp))
                 }
                 IconButton(onClick = onCycleRepeat) {
                     Icon(
@@ -245,9 +245,9 @@ fun NowPlayingScreen(
                     Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Rounded.QueueMusic, contentDescription = null, tint = Color.White)
+                    Icon(Icons.Rounded.QueueMusic, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface)
                     Column(Modifier.weight(1f).padding(start = 12.dp)) {
-                        Text("Up next", color = Color.White, fontWeight = FontWeight.SemiBold)
+                        Text("Up next", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
                         Text("${tracks.size} lagu dalam antrean", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     }
                     Text("Lihat", color = activeTint, style = MaterialTheme.typography.labelLarge)
@@ -265,7 +265,7 @@ fun NowPlayingScreen(
         ) {
             Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp)) {
                 Text("Up next", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text("Antrean pemutaran", color = Color.White.copy(alpha = 0.62f), style = MaterialTheme.typography.bodySmall)
+                Text("Antrean pemutaran", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.62f), style = MaterialTheme.typography.bodySmall)
                 Spacer(Modifier.height(12.dp))
                 LazyColumn(modifier = Modifier.fillMaxWidth().height(360.dp)) {
                     items(tracks, key = { it.id }) { track ->
@@ -286,9 +286,9 @@ fun NowPlayingScreen(
                             }
                             Column(Modifier.weight(1f).padding(start = 12.dp)) {
                                 Text(track.title, color = if (selected) activeTint else MaterialTheme.colorScheme.onSurface, maxLines = 1, fontWeight = FontWeight.Medium)
-                                Text(track.artist, color = Color.White.copy(alpha = 0.62f), maxLines = 1, style = MaterialTheme.typography.bodySmall)
+                                Text(track.artist, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.62f), maxLines = 1, style = MaterialTheme.typography.bodySmall)
                             }
-                            Text(formatTime(track.durationMs), color = Color.White.copy(alpha = 0.55f), style = MaterialTheme.typography.labelSmall)
+                            Text(formatTime(track.durationMs), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f), style = MaterialTheme.typography.labelSmall)
                         }
                     }
                 }
