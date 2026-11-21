@@ -43,20 +43,21 @@ fun MiniPlayer(
     onNext: () -> Unit = {}
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 3.dp),
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 4.dp),
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        tonalElevation = 1.dp
     ) {
         Column {
             Row(
-                modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
-                    .padding(start = 10.dp, end = 4.dp, top = 7.dp, bottom = 6.dp),
+                modifier = Modifier.fillMaxWidth()
+                    .clickable(onClick = onClick)
+                    .padding(start = 10.dp, end = 5.dp, top = 8.dp, bottom = 7.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(11.dp)
             ) {
                 Box(
-                    modifier = Modifier.size(44.dp).clip(RoundedCornerShape(7.dp))
+                    modifier = Modifier.size(46.dp).clip(RoundedCornerShape(11.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
@@ -65,21 +66,13 @@ fun MiniPlayer(
                             model = artworkUri,
                             contentDescription = "Album artwork",
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier.size(44.dp)
+                            modifier = Modifier.size(46.dp)
                         )
                     } else {
-                        Box(
-                            modifier = Modifier.size(34.dp).background(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
-                                CircleShape
-                            ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("R", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleLarge)
-                        }
+                        Text("R", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleLarge)
                     }
                 }
-                Column(modifier = Modifier.weight(1f)) {
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
                         title.ifBlank { "Nothing playing" },
                         style = MaterialTheme.typography.titleSmall,
@@ -95,11 +88,12 @@ fun MiniPlayer(
                 IconButton(onClick = onPlayPause) {
                     Icon(
                         if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                        contentDescription = if (isPlaying) "Pause" else "Play"
+                        contentDescription = if (isPlaying) "Pause" else "Play",
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 IconButton(onClick = onNext) {
-                    Icon(Icons.Rounded.SkipNext, contentDescription = "Next")
+                    Icon(Icons.Rounded.SkipNext, contentDescription = "Next", tint = MaterialTheme.colorScheme.onSurface)
                 }
             }
             LinearProgressIndicator(
