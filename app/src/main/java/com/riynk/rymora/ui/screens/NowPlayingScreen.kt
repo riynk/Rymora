@@ -217,7 +217,7 @@ fun NowPlayingScreen(
                         Icon(
                             if (state.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                             contentDescription = if (state.isPlaying) "Pause" else "Play",
-                            tint = Color(0xFF171416),
+                            tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(38.dp)
                         )
                     }
