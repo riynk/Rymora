@@ -55,6 +55,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.riynk.rymora.playback.LocalTrack
 
@@ -67,7 +68,7 @@ fun HomeScreen(
     onOpenSettings: () -> Unit,
     onScan: () -> Unit
 ) {
-    val albumCount = remember(tracks) { tracks.map { it.album }.filter(String::isNotBlank).distinct().size }
+    val albumCount = remember(tracks) { tracks.map { it.album }.filter { it.isNotBlank() }.distinct().size }
     val artistCount = remember(tracks) { tracks.map { it.artist }.filter(String::isNotBlank).distinct().size }
 
     LazyColumn(
@@ -78,7 +79,7 @@ fun HomeScreen(
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                    Text("RYMORA", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, letterSpacing = 2.spCompat())
+                    Text("RYMORA", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
                     Text("Your music space", style = MaterialTheme.typography.headlineMedium)
                 }
                 IconButton(onClick = onOpenSettings) {
@@ -456,4 +457,3 @@ private fun formatDuration(durationMs: Long): String {
     return "${seconds / 60}:${(seconds % 60).toString().padStart(2, '0')}"
 }
 
-private fun Int.spCompat() = androidx.compose.ui.unit.sp
