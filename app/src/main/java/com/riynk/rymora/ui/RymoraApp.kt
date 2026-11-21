@@ -385,35 +385,43 @@ private fun HomeDestination(
     onOpenLibrary: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
+    val albums = remember(tracks) { tracks.map { it.album }.filter { it.isNotBlank() }.distinct().size }
+    val artists = remember(tracks) { tracks.map { it.artist }.filter { it.isNotBlank() }.distinct().size }
+
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(
             title = "Rymora",
-            subtitle = "Music on this device",
+            subtitle = "Your music, in your rhythm",
             onAction = onOpenSettings
         )
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item {
                 Surface(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = RoundedCornerShape(22.dp)
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    shape = RoundedCornerShape(26.dp)
                 ) {
-                    Column(Modifier.padding(18.dp)) {
-                        Text("Your music, your atmosphere.", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Column(Modifier.padding(20.dp)) {
                         Text(
-                            tracks.size.toString() + " songs found on this device",
-                            modifier = Modifier.padding(top = 6.dp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            "Your library",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            "${tracks.size} songs • $albums albums • $artists artists",
+                            modifier = Modifier.padding(top = 5.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyMedium
                         )
                         Row(
-                            modifier = Modifier.padding(top = 16.dp),
+                            modifier = Modifier.padding(top = 18.dp),
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Button(onClick = onOpenLibrary) { Text("Open library") }
-                            Button(onClick = onScan) {
+                            Button(onClick = onOpenLibrary) { Text("Browse music") }
+                            androidx.compose.material3.OutlinedButton(onClick = onScan) {
                                 Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Text(" Scan")
                             }
@@ -422,21 +430,55 @@ private fun HomeDestination(
                 }
             }
             item {
-                SectionTitle("Your songs", tracks.size.toString() + " tracks")
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Surface(
+                        modifier = Modifier.weight(1f).clickable(onClick = onOpenLibrary),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(18.dp)
+                    ) {
+                        Column(Modifier.padding(16.dp)) {
+                            Icon(Icons.Rounded.Album, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Text("$albums", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                            Text("Albums", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                    Surface(
+                        modifier = Modifier.weight(1f).clickable(onClick = onOpenLibrary),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(18.dp)
+                    ) {
+                        Column(Modifier.padding(16.dp)) {
+                            Icon(Icons.Rounded.Person, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+                            Text("$artists", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                            Text("Artists", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+            item {
+                SectionTitle("Recently added", "Latest local tracks")
             }
             if (tracks.isEmpty()) {
                 item {
                     EmptyMessage(
                         title = "Your library is empty",
-                        message = "Scan this device to find local music."
+                        message = "Allow audio access and scan your device to find music stored locally."
                     )
+                }
+                item {
+                    Button(onClick = onScan, modifier = Modifier.padding(horizontal = 16.dp)) {
+                        Text("Scan device")
+                    }
                 }
             } else {
                 items(tracks.take(12), key = { it.id }) { track ->
                     TrackRow(track = track, onClick = { onPlayTrack(track) })
                 }
             }
-            item { Spacer(Modifier.height(12.dp)) }
+            item { Spacer(Modifier.height(16.dp)) }
         }
     }
 }
@@ -595,30 +637,121 @@ private fun SettingsDestination(
                 Icon(Icons.Rounded.ArrowBack, contentDescription = "Back")
             }
             Column(Modifier.padding(start = 8.dp)) {
-                Text("Settings", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text("Rymora", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Settings", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Text("Make Rymora yours", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        Surface(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
-                .clickable(onClick = onScan),
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, bottom = 28.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Rounded.Refresh, contentDescription = null)
-                Column(Modifier.weight(1f).padding(start = 14.dp)) {
-                    Text("Scan device", fontWeight = FontWeight.SemiBold)
-                    Text("Refresh your local music library", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            item {
+                SettingsGroup(title = "Appearance", subtitle = "Visual experience") {
+                    SettingsInfoRow(
+                        icon = Icons.Rounded.MusicNote,
+                        title = "Obsidian Aurora",
+                        description = "Dark surfaces, expressive accent colors and album artwork"
+                    )
+                }
+            }
+            item {
+                SettingsGroup(title = "Your library", subtitle = "Local music management") {
+                    SettingsActionRow(
+                        icon = Icons.Rounded.Refresh,
+                        title = "Scan device",
+                        description = "Find newly added audio files on this device",
+                        actionLabel = "Scan",
+                        onClick = onScan
+                    )
+                    SettingsInfoRow(
+                        icon = Icons.Rounded.LibraryMusic,
+                        title = "Offline library",
+                        description = "Your music stays on your device"
+                    )
+                }
+            }
+            item {
+                SettingsGroup(title = "Playback", subtitle = "Listening experience") {
+                    SettingsInfoRow(
+                        icon = Icons.Rounded.MusicNote,
+                        title = "Local playback",
+                        description = "Playback is powered by Android Media3"
+                    )
+                }
+            }
+            item {
+                SettingsGroup(title = "About", subtitle = "Application information") {
+                    SettingsInfoRow(
+                        icon = Icons.Rounded.Person,
+                        title = "Rymora",
+                        description = "Offline-first music player"
+                    )
                 }
             }
         }
-        Text(
-            "Rymora • Local music player",
-            modifier = Modifier.padding(20.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall
-        )
+    }
+}
+
+@Composable
+private fun SettingsGroup(
+    title: String,
+    subtitle: String,
+    content: @Composable () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.padding(start = 4.dp)) {
+            Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            shape = RoundedCornerShape(22.dp)
+        ) {
+            Column(content = content)
+        }
+    }
+}
+
+@Composable
+private fun SettingsInfoRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    description: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title, style = MaterialTheme.typography.titleSmall)
+            Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun SettingsActionRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    description: String,
+    actionLabel: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title, style = MaterialTheme.typography.titleSmall)
+            Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Text(actionLabel, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
     }
 }
 
