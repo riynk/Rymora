@@ -102,7 +102,7 @@ fun NowPlayingScreen(
                     onVerticalDrag = { change, amount ->
                         if (amount > 0f && !dismissed) {
                             downwardDrag += amount
-                            if (downwardDrag > 120f) {
+                            if (downwardDrag > 145.dp.toPx()) {
                                 dismissed = true
                                 onCollapse()
                             }
@@ -135,7 +135,7 @@ fun NowPlayingScreen(
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()
         ) {
-            val artworkSize = minOf(maxWidth - 52.dp, maxHeight * 0.40f).coerceAtLeast(176.dp)
+            val compact = maxHeight < 690.dp\n            val artworkSize = minOf(maxWidth - 48.dp, maxHeight * if (compact) 0.34f else 0.43f).coerceAtLeast(160.dp)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -155,7 +155,7 @@ fun NowPlayingScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
-                        Text("PLAYING FROM YOUR LIBRARY", style = MaterialTheme.typography.labelSmall, color = muted, letterSpacing = 1.1.sp)
+                        Text("LOCAL MUSIC", style = MaterialTheme.typography.labelSmall, color = muted, letterSpacing = 1.5.sp)
                         Text("Now Playing", style = MaterialTheme.typography.titleMedium)
                     }
                     IconButton(onClick = { showQueue = true }) {
@@ -242,7 +242,7 @@ fun NowPlayingScreen(
                         enabled = state.hasTrack,
                         shape = CircleShape,
                         color = active,
-                        modifier = Modifier.size(68.dp)
+                        modifier = Modifier.size(if (compact) 64.dp else 72.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
@@ -278,10 +278,10 @@ fun NowPlayingScreen(
                     ) {
                         Icon(Icons.Rounded.QueueMusic, contentDescription = null, tint = active)
                         Column(modifier = Modifier.weight(1f).padding(start = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text("Up next", style = MaterialTheme.typography.titleSmall)
-                            Text("${tracks.size} songs in queue", style = MaterialTheme.typography.bodySmall, color = muted)
+                            Text("Queue", style = MaterialTheme.typography.titleSmall)
+                            Text("${tracks.size} tracks · current playlist", style = MaterialTheme.typography.bodySmall, color = muted)
                         }
-                        Text("VIEW", style = MaterialTheme.typography.labelMedium, color = active, letterSpacing = 0.8.sp)
+                        Text("OPEN", style = MaterialTheme.typography.labelMedium, color = active, letterSpacing = 0.8.sp)
                     }
                 }
                 Spacer(Modifier.height(18.dp))
@@ -297,9 +297,9 @@ fun NowPlayingScreen(
         ) {
             Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp)) {
                 Text("Up next", style = MaterialTheme.typography.headlineSmall)
-                Text("The current playback queue", style = MaterialTheme.typography.bodySmall, color = muted)
+                Text("Tap a track to play it", style = MaterialTheme.typography.bodySmall, color = muted)
                 Spacer(Modifier.height(12.dp))
-                LazyColumn(Modifier.fillMaxWidth().height(380.dp)) {
+                LazyColumn(Modifier.fillMaxWidth().height(400.dp)) {
                     items(tracks, key = { it.id }) { track ->
                         val selected = track.uri.toString() == state.mediaId
                         Row(
