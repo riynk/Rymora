@@ -6,11 +6,6 @@ import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,6 +29,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
 import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -71,6 +72,10 @@ fun RymoraApp(playbackViewModel: PlaybackViewModel = viewModel()) {
     val playback by playbackViewModel.state.collectAsStateWithLifecycle()
     val tracks by playbackViewModel.tracks.collectAsStateWithLifecycle()
     var playerExpanded by remember { mutableStateOf(false) }
+    var playerDragging by remember { mutableStateOf(false) }
+    var dragExpansion by remember { mutableStateOf(0f) }
+    val animatedExpansion by animateFloatAsState(targetValue = if (playerExpanded) 1f else 0f, animationSpec = spring(dampingRatio = 0.82f, stiffness = Spring.StiffnessLow), label = "player expansion")
+    val expansion = if (playerDragging) dragExpansion else animatedExpansion
 
     val audioPermission = if (Build.VERSION.SDK_INT >= 33) {
         Manifest.permission.READ_MEDIA_AUDIO
@@ -122,7 +127,10 @@ fun RymoraApp(playbackViewModel: PlaybackViewModel = viewModel()) {
                             } else 0f,
                             onClick = { playerExpanded = true },
                             onPlayPause = playbackViewModel::togglePlayPause,
-                            onNext = playbackViewModel::skipNext
+                            onNext = playbackViewModel::skipNext,
+                            expansionProgress = expansion,
+                            onDragProgress = { progress -> playerDragging = true; dragExpansion = progress },
+                            onDragEnd = { playerExpanded = dragExpansion > 0.38f; playerDragging = false }
                         )
                     }
                     NavigationBar(
@@ -193,25 +201,33 @@ fun RymoraApp(playbackViewModel: PlaybackViewModel = viewModel()) {
             }
         }
 
-        AnimatedVisibility(
-            visible = playerExpanded,
-            modifier = Modifier.fillMaxSize().zIndex(2f),
-            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
-        ) {
-            NowPlayingScreen(
-                state = playback,
-                tracks = tracks,
-                onCollapse = { playerExpanded = false },
-                onPlayPause = playbackViewModel::togglePlayPause,
-                onNext = playbackViewModel::skipNext,
-                onPrevious = playbackViewModel::skipPrevious,
-                onSeek = playbackViewModel::seekTo,
-                onToggleShuffle = playbackViewModel::toggleShuffle,
-                onCycleRepeat = playbackViewModel::cycleRepeatMode,
-                onSelectTrack = playbackViewModel::playTrack,
-                modifier = Modifier.fillMaxSize()
-            )
+        if (expansion > 0f || playerExpanded) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zIndex(2f)
+                    .graphicsLayer {
+                        alpha = expansion
+                        scaleX = 0.92f + 0.08f * expansion
+                        scaleY = 0.90f + 0.10f * expansion
+                        translationY = size.height * (1f - expansion) * 0.12f
+                    }
+                    .clip(RoundedCornerShape((30f * (1f - expansion)).dp))
+            ) {
+                NowPlayingScreen(
+                    state = playback,
+                    tracks = tracks,
+                    onCollapse = { playerExpanded = false },
+                    onPlayPause = playbackViewModel::togglePlayPause,
+                    onNext = playbackViewModel::skipNext,
+                    onPrevious = playbackViewModel::skipPrevious,
+                    onSeek = playbackViewModel::seekTo,
+                    onToggleShuffle = playbackViewModel::toggleShuffle,
+                    onCycleRepeat = playbackViewModel::cycleRepeatMode,
+                    onSelectTrack = playbackViewModel::playTrack,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
     }
 }
