@@ -2,26 +2,31 @@ package com.riynk.rymora.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowDownward
+import androidx.compose.material.icons.rounded.Album
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.QueueMusic
@@ -30,12 +35,13 @@ import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,12 +53,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.media3.common.Player
 import coil.compose.AsyncImage
 import com.riynk.rymora.playback.LocalTrack
@@ -63,7 +71,7 @@ import com.riynk.rymora.playback.PlaybackUiState
 fun NowPlayingScreen(
     state: PlaybackUiState,
     tracks: List<LocalTrack>,
-    onBack: () -> Unit,
+    onCollapse: () -> Unit,
     onPlayPause: () -> Unit,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
@@ -76,229 +84,262 @@ fun NowPlayingScreen(
     var showQueue by remember { mutableStateOf(false) }
     val duration = state.durationMs.coerceAtLeast(0L)
     val position = state.positionMs.coerceIn(0L, duration)
-    val activeTint = Color(0xFFFF6B55)
-    val inactiveTint = Color.White.copy(alpha = 0.68f)
+    val active = MaterialTheme.colorScheme.primary
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
 
-    Box(modifier = modifier.fillMaxSize().background(Color(0xFF171416))) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .pointerInput(onCollapse) {
+                var downwardDrag = 0f
+                var dismissed = false
+                detectVerticalDragGestures(
+                    onDragStart = {
+                        downwardDrag = 0f
+                        dismissed = false
+                    },
+                    onVerticalDrag = { change, amount ->
+                        if (amount > 0f && !dismissed) {
+                            downwardDrag += amount
+                            if (downwardDrag > 145.dp.toPx()) {
+                                dismissed = true
+                                onCollapse()
+                            }
+                            change.consume()
+                        }
+                    }
+                )
+            }
+    ) {
         if (state.artworkUri != null) {
             AsyncImage(
                 model = state.artworkUri,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize().blur(48.dp).graphicsLayer { alpha = 0.48f }
+                modifier = Modifier.fillMaxSize().blur(54.dp)
             )
         }
         Box(
             Modifier.fillMaxSize().background(
                 Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xCC241C20),
-                        Color(0xF2171416),
-                        Color(0xFF111014)
+                    listOf(
+                        MaterialTheme.colorScheme.background.copy(alpha = 0.34f),
+                        MaterialTheme.colorScheme.background.copy(alpha = 0.94f),
+                        MaterialTheme.colorScheme.background
                     )
                 )
             )
         )
 
-        Column(
-            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-                .padding(horizontal = 22.dp, vertical = 10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+            val compact = maxHeight < 690.dp
+            val artworkSize = minOf(maxWidth - 48.dp, maxHeight * if (compact) 0.34f else 0.43f).coerceAtLeast(160.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.Rounded.ArrowDownward, contentDescription = "Collapse player", tint = Color.White)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onCollapse) {
+                        Icon(Icons.Rounded.Close, contentDescription = "Close player")
+                    }
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Text("LOCAL MUSIC", style = MaterialTheme.typography.labelSmall, color = muted, letterSpacing = 1.5.sp)
+                        Text("Now Playing", style = MaterialTheme.typography.titleMedium)
+                    }
+                    IconButton(onClick = { showQueue = true }) {
+                        Icon(Icons.Rounded.QueueMusic, contentDescription = "Open queue")
+                    }
                 }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("NOW PLAYING", color = Color.White, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
-                    Text("RYMORA MIX", color = Color.White.copy(alpha = 0.58f), style = MaterialTheme.typography.labelSmall)
-                }
-                IconButton(onClick = { showQueue = true }) {
-                    Icon(Icons.Rounded.QueueMusic, contentDescription = "Up next", tint = Color.White)
-                }
-            }
 
-            Spacer(Modifier.height(24.dp))
-
-            Surface(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
-                    .aspectRatio(1f),
-                shape = RoundedCornerShape(24.dp),
-                color = Color.White.copy(alpha = 0.07f),
-                shadowElevation = 18.dp
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    if (state.artworkUri != null) {
-                        AsyncImage(
-                            model = state.artworkUri,
-                            contentDescription = "Album artwork",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        Box(
-                            Modifier.fillMaxSize().background(
-                                Brush.linearGradient(listOf(Color(0xFF4B2635), Color(0xFF171D32)))
-                            ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("R", color = Color.White, style = MaterialTheme.typography.displayLarge, fontWeight = FontWeight.Black)
+                Spacer(Modifier.height(16.dp))
+                Surface(
+                    modifier = Modifier.size(artworkSize),
+                    shape = RoundedCornerShape(22.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shadowElevation = 18.dp
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        if (state.artworkUri != null) {
+                            AsyncImage(
+                                model = state.artworkUri,
+                                contentDescription = "Album artwork",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Icon(Icons.Rounded.Album, contentDescription = null, modifier = Modifier.size(84.dp), tint = active)
                         }
                     }
                 }
-            }
 
-            Spacer(Modifier.height(28.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        if (state.hasTrack) state.title else "No track selected",
-                        color = Color.White,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1
-                    )
-                    Text(
-                        if (state.hasTrack) state.artist else "Choose a song from your library",
-                        color = Color.White.copy(alpha = 0.68f),
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 1
-                    )
-                }
-                Text("♪", color = activeTint, style = MaterialTheme.typography.headlineMedium)
-            }
-
-            Slider(
-                value = if (duration > 0L) position.toFloat() else 0f,
-                onValueChange = { onSeek(it.toLong()) },
-                valueRange = 0f..duration.coerceAtLeast(1L).toFloat(),
-                enabled = state.hasTrack && duration > 0L,
-                modifier = Modifier.padding(top = 18.dp),
-                colors = androidx.compose.material3.SliderDefaults.colors(
-                    thumbColor = activeTint,
-                    activeTrackColor = activeTint,
-                    inactiveTrackColor = Color.White.copy(alpha = 0.24f)
-                )
-            )
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(formatTime(position), color = Color.White.copy(alpha = 0.65f), style = MaterialTheme.typography.labelSmall)
-                Text("-${formatTime((duration - position).coerceAtLeast(0L))}", color = Color.White.copy(alpha = 0.65f), style = MaterialTheme.typography.labelSmall)
-            }
-
-            Spacer(Modifier.height(18.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onToggleShuffle) {
-                    Icon(Icons.Rounded.Shuffle, contentDescription = "Shuffle", tint = if (state.shuffleEnabled) activeTint else inactiveTint)
-                }
-                IconButton(onClick = onPrevious, enabled = state.hasPrevious) {
-                    Icon(Icons.Rounded.SkipPrevious, contentDescription = "Previous", tint = Color.White, modifier = Modifier.size(34.dp))
-                }
-                Surface(
-                    onClick = onPlayPause,
-                    enabled = state.hasTrack,
-                    shape = CircleShape,
-                    color = Color.White,
-                    modifier = Modifier.size(68.dp)
+                Spacer(Modifier.height(24.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            state.title.ifBlank { "Nothing playing" },
+                            style = MaterialTheme.typography.headlineSmall,
+                            maxLines = 1
+                        )
+                        Text(
+                            state.artist.ifBlank { "Choose a song from your library" },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = muted,
+                            maxLines = 1
+                        )
+                    }
+                    IconButton(onClick = { showQueue = true }) {
+                        Icon(Icons.Rounded.MoreVert, contentDescription = "More playback options", tint = muted)
+                    }
+                }
+
+                Spacer(Modifier.height(12.dp))
+                Slider(
+                    value = position.toFloat(),
+                    onValueChange = { onSeek(it.toLong()) },
+                    valueRange = 0f..duration.coerceAtLeast(1L).toFloat(),
+                    enabled = state.hasTrack && duration > 0L,
+                    colors = SliderDefaults.colors(
+                        thumbColor = active,
+                        activeTrackColor = active,
+                        inactiveTrackColor = muted.copy(alpha = 0.30f)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(formatTime(position), style = MaterialTheme.typography.labelSmall, color = muted)
+                    Text("-${formatTime((duration - position).coerceAtLeast(0L))}", style = MaterialTheme.typography.labelSmall, color = muted)
+                }
+
+                Spacer(Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onToggleShuffle) {
+                        Icon(Icons.Rounded.Shuffle, contentDescription = "Shuffle", tint = if (state.shuffleEnabled) active else muted)
+                    }
+                    IconButton(onClick = onPrevious, enabled = state.hasPrevious) {
+                        Icon(Icons.Rounded.SkipPrevious, contentDescription = "Previous", modifier = Modifier.size(34.dp))
+                    }
+                    Surface(
+                        onClick = onPlayPause,
+                        enabled = state.hasTrack,
+                        shape = CircleShape,
+                        color = active,
+                        modifier = Modifier.size(if (compact) 64.dp else 72.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                if (state.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                                contentDescription = if (state.isPlaying) "Pause" else "Play",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(38.dp)
+                            )
+                        }
+                    }
+                    IconButton(onClick = onNext, enabled = state.hasNext) {
+                        Icon(Icons.Rounded.SkipNext, contentDescription = "Next", modifier = Modifier.size(34.dp))
+                    }
+                    IconButton(onClick = onCycleRepeat) {
                         Icon(
-                            if (state.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                            contentDescription = if (state.isPlaying) "Pause" else "Play",
-                            tint = Color(0xFF171416),
-                            modifier = Modifier.size(38.dp)
+                            if (state.repeatMode == Player.REPEAT_MODE_ONE) Icons.Rounded.RepeatOne else Icons.Rounded.Repeat,
+                            contentDescription = "Repeat",
+                            tint = if (state.repeatMode == Player.REPEAT_MODE_OFF) muted else active
                         )
                     }
                 }
-                IconButton(onClick = onNext, enabled = state.hasNext) {
-                    Icon(Icons.Rounded.SkipNext, contentDescription = "Next", tint = Color.White, modifier = Modifier.size(34.dp))
-                }
-                IconButton(onClick = onCycleRepeat) {
-                    Icon(
-                        if (state.repeatMode == Player.REPEAT_MODE_ONE) Icons.Rounded.RepeatOne else Icons.Rounded.Repeat,
-                        contentDescription = "Repeat",
-                        tint = if (state.repeatMode == Player.REPEAT_MODE_OFF) inactiveTint else activeTint
-                    )
-                }
-            }
 
-            Spacer(Modifier.height(20.dp))
-            Surface(
-                onClick = { showQueue = true },
-                color = Color.White.copy(alpha = 0.09f),
-                shape = RoundedCornerShape(18.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Spacer(Modifier.height(14.dp))
+                Surface(
+                    onClick = { showQueue = true },
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    shape = RoundedCornerShape(18.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(Icons.Rounded.QueueMusic, contentDescription = null, tint = Color.White)
-                    Column(Modifier.weight(1f).padding(start = 12.dp)) {
-                        Text("Up next", color = Color.White, fontWeight = FontWeight.SemiBold)
-                        Text("${tracks.size} lagu dalam antrean", color = Color.White.copy(alpha = 0.62f), style = MaterialTheme.typography.bodySmall)
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 15.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Rounded.QueueMusic, contentDescription = null, tint = active)
+                        Column(modifier = Modifier.weight(1f).padding(start = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text("Queue", style = MaterialTheme.typography.titleSmall)
+                            Text("${tracks.size} tracks · current playlist", style = MaterialTheme.typography.bodySmall, color = muted)
+                        }
+                        Text("OPEN", style = MaterialTheme.typography.labelMedium, color = active, letterSpacing = 0.8.sp)
                     }
-                    Text("Lihat", color = activeTint, style = MaterialTheme.typography.labelLarge)
                 }
+                Spacer(Modifier.height(18.dp))
             }
-            Spacer(Modifier.height(26.dp))
         }
     }
 
     if (showQueue) {
         ModalBottomSheet(
             onDismissRequest = { showQueue = false },
-            containerColor = Color(0xFF211D20),
-            contentColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.onSurface
         ) {
             Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp)) {
-                Text("Up next", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text("Antrean pemutaran", color = Color.White.copy(alpha = 0.62f), style = MaterialTheme.typography.bodySmall)
+                Text("Up next", style = MaterialTheme.typography.headlineSmall)
+                Text("Tap a track to play it", style = MaterialTheme.typography.bodySmall, color = muted)
                 Spacer(Modifier.height(12.dp))
-                LazyColumn(modifier = Modifier.fillMaxWidth().height(360.dp)) {
+                LazyColumn(Modifier.fillMaxWidth().height(400.dp)) {
                     items(tracks, key = { it.id }) { track ->
                         val selected = track.uri.toString() == state.mediaId
                         Row(
-                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
-                                .background(if (selected) Color.White.copy(alpha = 0.10f) else Color.Transparent)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(13.dp))
                                 .clickable { onSelectTrack(track); showQueue = false }
-                                .padding(horizontal = 10.dp, vertical = 13.dp),
+                                .background(if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f) else Color.Transparent)
+                                .padding(horizontal = 9.dp, vertical = 11.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Box(
-                                Modifier.size(42.dp).clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFF40323A)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(if (selected) "♫" else "♪", color = activeTint)
+                            if (track.artworkUri != null) {
+                                AsyncImage(
+                                    model = track.artworkUri,
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.size(44.dp).clip(RoundedCornerShape(9.dp))
+                                )
+                            } else {
+                                Box(
+                                    Modifier.size(44.dp).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(9.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) { Icon(Icons.Rounded.Album, contentDescription = null, tint = active) }
                             }
                             Column(Modifier.weight(1f).padding(start = 12.dp)) {
-                                Text(track.title, color = if (selected) activeTint else Color.White, maxLines = 1, fontWeight = FontWeight.Medium)
-                                Text(track.artist, color = Color.White.copy(alpha = 0.62f), maxLines = 1, style = MaterialTheme.typography.bodySmall)
+                                Text(track.title, style = MaterialTheme.typography.titleSmall, maxLines = 1, color = if (selected) active else MaterialTheme.colorScheme.onSurface)
+                                Text(track.artist, style = MaterialTheme.typography.bodySmall, maxLines = 1, color = muted)
                             }
-                            Text(formatTime(track.durationMs), color = Color.White.copy(alpha = 0.55f), style = MaterialTheme.typography.labelSmall)
+                            Text(formatTime(track.durationMs), style = MaterialTheme.typography.labelSmall, color = muted)
                         }
                     }
                 }
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(22.dp))
             }
         }
     }
 }
 
 private fun formatTime(milliseconds: Long): String {
-    val totalSeconds = (milliseconds / 1000L).coerceAtLeast(0L)
-    return "${totalSeconds / 60}:${(totalSeconds % 60).toString().padStart(2, '0')}"
+    val seconds = (milliseconds / 1000L).coerceAtLeast(0L)
+    return "${seconds / 60}:${(seconds % 60).toString().padStart(2, '0')}"
 }

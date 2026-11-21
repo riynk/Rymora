@@ -3,6 +3,7 @@ package com.riynk.rymora.ui.components
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Pause
@@ -27,7 +27,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 
@@ -40,23 +44,51 @@ fun MiniPlayer(
     progress: Float = 0f,
     onClick: () -> Unit,
     onPlayPause: () -> Unit = {},
-    onNext: () -> Unit = {}
+    onNext: () -> Unit = {},
+    expansionProgress: Float = 0f,
+    onDragProgress: (Float) -> Unit = {},
+    onDragEnd: () -> Unit = {}
 ) {
+    val dragProgress = expansionProgress.coerceIn(0f, 1f)
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 3.dp),
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp
+        modifier = Modifier
+            .fillMaxWidth()
+            .graphicsLayer {
+                scaleX = 1f + dragProgress * 0.035f
+                scaleY = 1f + dragProgress * 0.075f
+                alpha = 1f - dragProgress * 0.92f
+            }
+            .padding(horizontal = 10.dp, vertical = 4.dp)
+            .pointerInput(onDragProgress, onDragEnd) {
+                var distance = 0f
+                detectVerticalDragGestures(
+                    onDragStart = { distance = 0f },
+                    onVerticalDrag = { change, delta ->
+                        distance = (distance - delta).coerceAtLeast(0f)
+                        onDragProgress((distance / (size.height * 3.2f)).coerceIn(0f, 1f))
+                        if (delta < 0f) change.consume()
+                    },
+                    onDragEnd = onDragEnd,
+                    onDragCancel = onDragEnd
+                )
+            },
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        tonalElevation = 1.dp
     ) {
         Column {
             Row(
-                modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
-                    .padding(start = 10.dp, end = 4.dp, top = 7.dp, bottom = 6.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onClick)
+                    .padding(start = 9.dp, end = 6.dp, top = 7.dp, bottom = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Box(
-                    modifier = Modifier.size(44.dp).clip(RoundedCornerShape(7.dp))
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(11.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
@@ -65,41 +97,26 @@ fun MiniPlayer(
                             model = artworkUri,
                             contentDescription = "Album artwork",
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier.size(44.dp)
+                            modifier = Modifier.size(48.dp)
                         )
                     } else {
-                        Box(
-                            modifier = Modifier.size(34.dp).background(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
-                                CircleShape
-                            ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("R", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleLarge)
-                        }
+                        Text("R", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.headlineSmall)
                     }
                 }
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        title.ifBlank { "Nothing playing" },
-                        style = MaterialTheme.typography.titleSmall,
-                        maxLines = 1
-                    )
-                    Text(
-                        artist.ifBlank { "Choose a track" },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
-                    )
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Text(title.ifBlank { "Nothing playing" }, style = MaterialTheme.typography.titleSmall, maxLines = 1)
+                    Text(artist.ifBlank { "Choose a track" }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
                 }
-                IconButton(onClick = onPlayPause) {
-                    Icon(
-                        if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                        contentDescription = if (isPlaying) "Pause" else "Play"
-                    )
+                IconButton(onClick = onPlayPause, modifier = Modifier.size(44.dp).semantics {
+                    contentDescription = if (isPlaying) "Pause playback" else "Resume playback"
+                }) {
+                    Icon(if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(27.dp))
                 }
-                IconButton(onClick = onNext) {
-                    Icon(Icons.Rounded.SkipNext, contentDescription = "Next")
+                IconButton(onClick = onNext, modifier = Modifier.size(42.dp)) {
+                    Icon(Icons.Rounded.SkipNext, contentDescription = "Next track", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(27.dp))
                 }
             }
             LinearProgressIndicator(
