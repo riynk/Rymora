@@ -76,10 +76,10 @@ fun NowPlayingScreen(
     var showQueue by remember { mutableStateOf(false) }
     val duration = state.durationMs.coerceAtLeast(0L)
     val position = state.positionMs.coerceIn(0L, duration)
-    val activeTint = Color(0xFFFF6B55)
-    val inactiveTint = Color.White.copy(alpha = 0.68f)
+    val activeTint = MaterialTheme.colorScheme.primary
+    val inactiveTint = MaterialTheme.colorScheme.onSurfaceVariant
 
-    Box(modifier = modifier.fillMaxSize().background(Color(0xFF171416))) {
+    Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         if (state.artworkUri != null) {
             AsyncImage(
                 model = state.artworkUri,
@@ -92,9 +92,9 @@ fun NowPlayingScreen(
             Modifier.fillMaxSize().background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xCC241C20),
-                        Color(0xF2171416),
-                        Color(0xFF111014)
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+                        MaterialTheme.colorScheme.background.copy(alpha = 0.94f),
+                        MaterialTheme.colorScheme.background
                     )
                 )
             )
@@ -111,11 +111,11 @@ fun NowPlayingScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.Rounded.ArrowDownward, contentDescription = "Collapse player", tint = Color.White)
+                    Icon(Icons.Rounded.ArrowDownward, contentDescription = "Collapse player", tint = MaterialTheme.colorScheme.onSurface)
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("NOW PLAYING", color = Color.White, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
-                    Text("RYMORA MIX", color = Color.White.copy(alpha = 0.58f), style = MaterialTheme.typography.labelSmall)
+                    Text("NOW PLAYING", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                    Text("RYMORA MIX", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                 }
                 IconButton(onClick = { showQueue = true }) {
                     Icon(Icons.Rounded.QueueMusic, contentDescription = "Up next", tint = Color.White)
@@ -128,7 +128,7 @@ fun NowPlayingScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
                     .aspectRatio(1f),
                 shape = RoundedCornerShape(24.dp),
-                color = Color.White.copy(alpha = 0.07f),
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 shadowElevation = 18.dp
             ) {
                 Box(contentAlignment = Alignment.Center) {
@@ -142,7 +142,7 @@ fun NowPlayingScreen(
                     } else {
                         Box(
                             Modifier.fillMaxSize().background(
-                                Brush.linearGradient(listOf(Color(0xFF4B2635), Color(0xFF171D32)))
+                                Brush.linearGradient(listOf(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.secondaryContainer))
                             ),
                             contentAlignment = Alignment.Center
                         ) {
@@ -168,7 +168,7 @@ fun NowPlayingScreen(
                     )
                     Text(
                         if (state.hasTrack) state.artist else "Choose a song from your library",
-                        color = Color.White.copy(alpha = 0.68f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 1
                     )
@@ -185,11 +185,11 @@ fun NowPlayingScreen(
                 colors = androidx.compose.material3.SliderDefaults.colors(
                     thumbColor = activeTint,
                     activeTrackColor = activeTint,
-                    inactiveTrackColor = Color.White.copy(alpha = 0.24f)
+                    inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.24f)
                 )
             )
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(formatTime(position), color = Color.White.copy(alpha = 0.65f), style = MaterialTheme.typography.labelSmall)
+                Text(formatTime(position), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                 Text("-${formatTime((duration - position).coerceAtLeast(0L))}", color = Color.White.copy(alpha = 0.65f), style = MaterialTheme.typography.labelSmall)
             }
 
@@ -237,7 +237,7 @@ fun NowPlayingScreen(
             Spacer(Modifier.height(20.dp))
             Surface(
                 onClick = { showQueue = true },
-                color = Color.White.copy(alpha = 0.09f),
+                color = MaterialTheme.colorScheme.surfaceContainer,
                 shape = RoundedCornerShape(18.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -248,7 +248,7 @@ fun NowPlayingScreen(
                     Icon(Icons.Rounded.QueueMusic, contentDescription = null, tint = Color.White)
                     Column(Modifier.weight(1f).padding(start = 12.dp)) {
                         Text("Up next", color = Color.White, fontWeight = FontWeight.SemiBold)
-                        Text("${tracks.size} lagu dalam antrean", color = Color.White.copy(alpha = 0.62f), style = MaterialTheme.typography.bodySmall)
+                        Text("${tracks.size} lagu dalam antrean", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     }
                     Text("Lihat", color = activeTint, style = MaterialTheme.typography.labelLarge)
                 }
@@ -260,8 +260,8 @@ fun NowPlayingScreen(
     if (showQueue) {
         ModalBottomSheet(
             onDismissRequest = { showQueue = false },
-            containerColor = Color(0xFF211D20),
-            contentColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.onSurface
         ) {
             Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp)) {
                 Text("Up next", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -272,20 +272,20 @@ fun NowPlayingScreen(
                         val selected = track.uri.toString() == state.mediaId
                         Row(
                             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
-                                .background(if (selected) Color.White.copy(alpha = 0.10f) else Color.Transparent)
+                                .background(if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f) else Color.Transparent)
                                 .clickable { onSelectTrack(track); showQueue = false }
                                 .padding(horizontal = 10.dp, vertical = 13.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Box(
                                 Modifier.size(42.dp).clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFF40323A)),
+                                    .background(MaterialTheme.colorScheme.surfaceVariant),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(if (selected) "♫" else "♪", color = activeTint)
                             }
                             Column(Modifier.weight(1f).padding(start = 12.dp)) {
-                                Text(track.title, color = if (selected) activeTint else Color.White, maxLines = 1, fontWeight = FontWeight.Medium)
+                                Text(track.title, color = if (selected) activeTint else MaterialTheme.colorScheme.onSurface, maxLines = 1, fontWeight = FontWeight.Medium)
                                 Text(track.artist, color = Color.White.copy(alpha = 0.62f), maxLines = 1, style = MaterialTheme.typography.bodySmall)
                             }
                             Text(formatTime(track.durationMs), color = Color.White.copy(alpha = 0.55f), style = MaterialTheme.typography.labelSmall)
